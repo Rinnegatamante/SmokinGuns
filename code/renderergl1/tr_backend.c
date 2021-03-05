@@ -738,11 +738,6 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	}
 	R_IssuePendingRenderCommands();
 
-#ifdef FRAMEBUFFER_AND_GLSL_SUPPORT
-	// Needed here to support cinematics
-	R_FrameBuffer_EndFrame();
-#endif
-
 	if ( tess.numIndexes ) {
 		RB_EndSurface();
 	}
@@ -763,7 +758,8 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 	if ( ( 1 << i ) != cols || ( 1 << j ) != rows) {
 		ri.Error (ERR_DROP, "Draw_StretchRaw: size not a power of 2: %i by %i", cols, rows);
 	}
-
+	
+	RE_UploadCinematic (w, h, cols, rows, data, client, dirty);
 	GL_Bind( tr.scratchImage[client] );
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
@@ -819,7 +815,7 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 	//if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
-		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
+		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
