@@ -346,11 +346,7 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 	// check for errors
 	if ( !r_ignoreGLErrors->integer )
 	{
-		int	err;
-
 		R_IssuePendingRenderCommands();
-		if ((err = qglGetError()) != GL_NO_ERROR)
-			ri.Error(ERR_FATAL, "RE_BeginFrame() - glGetError() failed (0x%x)!", err);
 	}
 
 	if (glConfig.stereoEnabled) {
@@ -376,11 +372,6 @@ void RE_BeginFrame( stereoFrame_t stereoFrame ) {
 				// clear both, front and backbuffer.
 				qglColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
 				qglClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-				
-				qglDrawBuffer(GL_FRONT);
-				qglClear(GL_COLOR_BUFFER_BIT);
-				qglDrawBuffer(GL_BACK);
-				qglClear(GL_COLOR_BUFFER_BIT);
 				
 				r_anaglyphMode->modified = qfalse;
 			}

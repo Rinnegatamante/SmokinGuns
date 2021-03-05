@@ -43,7 +43,7 @@ else ifneq ($(findstring MINGW,$(shell uname -a)),)
 endif
 
 CORE_DIR    += .
-TARGET_NAME := vitaquake3
+TARGET_NAME := smokinguns
 LIBM		    = -lm
 
 ifeq ($(STATIC_LINKING), 1)
@@ -202,7 +202,7 @@ ifeq ($(platform), libnx)
   COMPILE_ARCH=aarch64
 endif
 
-CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DUSE_ICON -DARCH_STRING=\"$(COMPILE_ARCH)\" -DNO_VM_COMPILED -DBOTLIB -DPRODUCT_VERSION=\"1.2 dev\" -DPRODUCT_RELEASE=\"1.2 dev\" -DSMOKINGUNS -DUSE_INTERNAL_JPEG
+CFLAGS   += -Wall -D__LIBRETRO__ $(fpic) -DUSE_ICON -DARCH_STRING=\"$(COMPILE_ARCH)\" -DNO_VM_COMPILED -DBOTLIB -DSMOKINGUNS -DUSE_INTERNAL_JPEG
 CXXFLAGS += -Wall -D__LIBRETRO__ $(fpic) -fpermissive -fno-rtti -fno-exceptions -std=gnu++11
 
 ifeq ($(platform), unix)

@@ -30,8 +30,6 @@ static bool widescreen_enabled      = false;
 
 int scr_width = 960, scr_height = 544;
 
-char *BASEGAME;
-
 void ( APIENTRY * qglBlendFunc )(GLenum sfactor, GLenum dfactor);
 void ( APIENTRY * qglTexImage2D )(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 void ( APIENTRY * qglTexParameteri )(GLenum target, GLenum pname, GLint param);
@@ -337,7 +335,7 @@ static bool initialize_gl()
 	if (log_cb) {
 		int i;
 		for (i = 0; i < GL_FUNCS_NUM; i++) {
-			if (!funcs[i].ptr) log_cb(RETRO_LOG_ERROR, "vitaQuakeIII: cannot get GL function #%d symbol.\n", i);
+			if (!funcs[i].ptr) log_cb(RETRO_LOG_ERROR, "smokin: cannot get GL function #%d symbol.\n", i);
 		}
 	}
 	
@@ -691,18 +689,6 @@ Sys_ParseArgs
 =================
 */
 void Sys_ParseArgs(int argc, char **argv) {
-    if (argc == 2) {
-        if (!strcmp(argv[1], "--version") ||
-            !strcmp(argv[1], "-v")) {
-            const char *date = PRODUCT_DATE;
-#ifdef DEDICATED
-            fprintf( stdout, Q3_VERSION " dedicated server (%s)\n", date );
-#else
-            fprintf(stdout, Q3_VERSION " client (%s)\n", date);
-#endif
-            Sys_Exit(0);
-        }
-    }
 }
 
 #ifndef DEFAULT_BASEDIR
@@ -772,7 +758,7 @@ static void update_variables(bool startup)
 {
 	struct retro_variable var;
 	
-	var.key = "vitaquakeiii_framerate";
+	var.key = "smokin_framerate";
 	var.value = NULL;
 	
 	if (startup)
@@ -793,7 +779,7 @@ static void update_variables(bool startup)
 			framerate    = 60;
 	}
 	
-	var.key = "vitaquakeiii_resolution";
+	var.key = "smokin_resolution";
 	var.value = NULL;
 	
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && !initial_resolution_set)
@@ -815,7 +801,7 @@ static void update_variables(bool startup)
 		initial_resolution_set = true;
 	}
    
-	var.key = "vitaquakeiii_invert_y_axis";
+	var.key = "smokin_invert_y_axis";
 	var.value = NULL;
 
 	if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -828,7 +814,7 @@ static void update_variables(bool startup)
 	
 	// We need setup sequence to be finished to change Cvar values
 	if (!startup) {
-		var.key = "vitaquakeiii_fps";
+		var.key = "smokin_fps";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -839,7 +825,7 @@ static void update_variables(bool startup)
 				Cvar_SetValue("cg_drawFPS", 1);
 		}
 
-      var.key = "vitaquakeiii_overbrights";
+      var.key = "smokin_overbrights";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -850,7 +836,7 @@ static void update_variables(bool startup)
 				Cvar_SetValue("r_overbrightBits", 1);
 		}
 
-		var.key = "vitaquakeiii_wide";
+		var.key = "smokin_wide";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -870,7 +856,7 @@ static void update_variables(bool startup)
          environ_cb(RETRO_ENVIRONMENT_SET_GEOMETRY, &info.geometry);
 		}
 		
-		var.key = "vitaquakeiii_pickups";
+		var.key = "smokin_pickups";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -881,7 +867,7 @@ static void update_variables(bool startup)
 				Cvar_SetValue("cg_simpleItems", 1);
 		}
 		
-		var.key = "vitaquakeiii_weapon";
+		var.key = "smokin_weapon";
 		var.value = NULL;
 
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -892,7 +878,7 @@ static void update_variables(bool startup)
 				Cvar_SetValue("cg_drawgun", 1);
 		}
 		
-		var.key = "vitaquakeiii_shadows";
+		var.key = "smokin_shadows";
 		var.value = NULL;
 		
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -905,7 +891,7 @@ static void update_variables(bool startup)
 				Cvar_SetValue("cg_shadows", 3);
 		}
 		
-		var.key = "vitaquakeiii_filter";
+		var.key = "smokin_filter";
 		var.value = NULL;
 		
 		if (environ_cb(RETRO_ENVIRONMENT_GET_VARIABLE, &var) && var.value)
@@ -958,7 +944,7 @@ void retro_set_controller_port_device(unsigned port, unsigned device)
 void retro_get_system_info(struct retro_system_info *info)
 {
    memset(info, 0, sizeof(*info));
-   info->library_name     = "vitaQuakeIII";
+   info->library_name     = "smokin";
    info->library_version  = "v0.8" ;
    info->need_fullpath    = true;
    info->valid_extensions = "pk3";
@@ -1160,7 +1146,7 @@ bool retro_load_game(const struct retro_game_info *info)
 	if (!initialize_opengl())
 	{
 		if (log_cb)
-			log_cb(RETRO_LOG_ERROR, "vitaQuakeIII: libretro frontend doesn't have OpenGL support.\n");
+			log_cb(RETRO_LOG_ERROR, "smokinguns: libretro frontend doesn't have OpenGL support.\n");
 		return false;
 	}
 	
@@ -1227,29 +1213,33 @@ bool retro_load_game(const struct retro_game_info *info)
 
 	extract_directory(g_rom_dir, g_rom_dir, sizeof(g_rom_dir));
 	
-	BASEGAME = (char*)malloc(256);
-	
-	if (strstr(path_lower, "missionpack"))
-		is_missionpack = true;
-	
-	if (strstr(path_lower, "q3ut4"))
-		is_urt = true;
-	
-	if (strstr(path_lower, "baseoa")) {
-		is_oa = true;
-		is_standalone = true;
-		sprintf(BASEGAME, "baseoa");
-	} else if (strstr(path_lower, "baseq3r")) {
-		is_rally = true;
-		is_standalone = true;
-		sprintf(BASEGAME, "baseq3r");
-	} else sprintf(BASEGAME, "baseq3");
-	
 	Sys_SetBinaryPath(g_rom_dir);
     Sys_SetDefaultInstallPath(g_rom_dir);
 
 	return true;
 }
+
+/*
+=================
+Sys_WritePIDFile
+Return qtrue if there is an existing stale PID file
+=================
+*/
+qboolean Sys_WritePIDFile( void )
+{
+	return qfalse;
+}
+
+#ifdef SMOKINGUNS
+char *Sys_GetEnv(const char *name)
+{
+	return getenv(name);
+}
+
+void Sys_BinaryEngineComment( void ) {}
+
+dialogResult_t Sys_Dialog( dialogType_t type, const char *message, const char *title ){ return DR_OK;}
+#endif
 
 bool first_boot = true;
 
@@ -1265,7 +1255,7 @@ void retro_run(void)
 		char commandLine[MAX_STRING_CHARS] = {0};
 		
 		// Starting input
-		IN_Init(NULL);
+		IN_Init();
 		
 		Sys_PlatformInit();
 
@@ -1280,6 +1270,9 @@ void retro_run(void)
 		update_variables(false);
 		Cvar_Set("name", Sys_GetCurrentUser());
 		first_boot = false;
+
+		// Create a ROM cvar to let the mod know the Smokin' Guns standalone engine is in use.
+		Cvar_Get("sa_engine_inuse", "1", CVAR_ROM);
 	}
 	
 	bool updated = false;
@@ -1884,10 +1877,8 @@ qboolean SNDDMA_Init(void)
 	dma.speed = SAMPLE_RATE;
 	dma.channels = 2;
 	dma.samples = BUFFER_SIZE;
-	dma.fullsamples = dma.samples / dma.channels;
 	dma.submission_chunk = 1;
 	dma.buffer = audio_buffer;
-	dma.isfloat = 0;
 	
 	snd_inited = qtrue;
 	
@@ -1983,7 +1974,7 @@ extern vidmode_t r_vidModes[];
 
 uint32_t cur_width;
 
-void GLimp_Init( qboolean coreContext)
+void GLimp_Init()
 {
 	int i;
 	if (r_mode->integer < 0) r_mode->integer = 3;
@@ -2290,7 +2281,7 @@ void IN_Frame( void )
 IN_Init
 ===============
 */
-void IN_Init( void *windowData )
+void IN_Init( void )
 {
 }
 

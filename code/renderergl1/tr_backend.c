@@ -72,7 +72,7 @@ void GL_SelectTexture( int unit )
 		return;
 	}
 
-	if ( unit == 0 )
+	/*if ( unit == 0 )
 	{
 		qglActiveTextureARB( GL_TEXTURE0_ARB );
 		GLimp_LogComment( "glActiveTextureARB( GL_TEXTURE0_ARB )\n" );
@@ -87,7 +87,7 @@ void GL_SelectTexture( int unit )
 		GLimp_LogComment( "glClientActiveTextureARB( GL_TEXTURE1_ARB )\n" );
 	} else {
 		ri.Error( ERR_DROP, "GL_SelectTexture: unit = %i", unit );
-	}
+	}*/
 
 	glState.currenttmu = unit;
 }
@@ -166,16 +166,16 @@ void GL_TexEnv( int env )
 	switch ( env )
 	{
 	case GL_MODULATE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE );
 		break;
 	case GL_REPLACE:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE );
 		break;
 	case GL_DECAL:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL );
 		break;
 	case GL_ADD:
-		qglTexEnvf( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
+		qglTexEnvi( GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_ADD );
 		break;
 	default:
 		ri.Error( ERR_DROP, "GL_TexEnv: invalid env '%d' passed", env );
@@ -771,10 +771,10 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );	
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );	
 	} else {
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
@@ -790,18 +790,25 @@ void RE_StretchRaw (int x, int y, int w, int h, int cols, int rows, const byte *
 
 	RB_SetGL2D();
 
-	qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
-
-	qglBegin (GL_QUADS);
-	qglTexCoord2f ( 0.5f / cols,  0.5f / rows );
-	qglVertex2f (x, y);
-	qglTexCoord2f ( ( cols - 0.5f ) / cols ,  0.5f / rows );
-	qglVertex2f (x+w, y);
-	qglTexCoord2f ( ( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f (x+w, y+h);
-	qglTexCoord2f ( 0.5f / cols, ( rows - 0.5f ) / rows );
-	qglVertex2f (x, y+h);
-	qglEnd ();
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+	float texcoords[] = {
+		0.5f / cols,  0.5f / rows,
+		( cols - 0.5f ) / cols ,  0.5f / rows,
+		( cols - 0.5f ) / cols, ( rows - 0.5f ) / rows,
+		0.5f / cols, ( rows - 0.5f ) / rows
+	};
+	float vertices[] = {
+		x, y, 0.0f,
+		x+w, y, 0.0f,
+		x+w, y+h, 0.0f,
+		x, y+h, 0.0f
+	};
+	qglColor4f( tr.identityLight, tr.identityLight, tr.identityLight, 1 );
+	
+	vglVertexPointer(3, GL_FLOAT, 0, 4, vertices);
+	vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoords);
+	vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
 }
 
 void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int client, qboolean dirty) {
@@ -809,21 +816,21 @@ void RE_UploadCinematic (int w, int h, int cols, int rows, const byte *data, int
 	GL_Bind( tr.scratchImage[client] );
 
 	// if the scratchImage isn't in the format we want, specify it as a new texture
-	if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
+	//if ( cols != tr.scratchImage[client]->width || rows != tr.scratchImage[client]->height ) {
 		tr.scratchImage[client]->width = tr.scratchImage[client]->uploadWidth = cols;
 		tr.scratchImage[client]->height = tr.scratchImage[client]->uploadHeight = rows;
 		qglTexImage2D( GL_TEXTURE_2D, 0, GL_RGB8, cols, rows, 0, GL_RGBA, GL_UNSIGNED_BYTE, data );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE );
-		qglTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE );	
-	} else {
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP );
+		qglTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP );	
+	/*} else {
 		if (dirty) {
 			// otherwise, just subimage upload it so that drivers can tell we are going to be changing
 			// it and don't try and do a texture compression
 			qglTexSubImage2D( GL_TEXTURE_2D, 0, 0, 0, cols, rows, GL_RGBA, GL_UNSIGNED_BYTE, data );
 		}
-	}
+	}*/
 }
 
 
@@ -958,8 +965,6 @@ const void	*RB_DrawBuffer( const void *data ) {
 
 	cmd = (const drawBufferCommand_t *)data;
 
-	qglDrawBuffer( cmd->buffer );
-
 	// clear screen for debugging
 	if ( r_clear->integer ) {
 		qglClearColor( 1, 0, 0.5, 1 );
@@ -1010,16 +1015,23 @@ void RB_ShowImages( void ) {
 		}
 
 		GL_Bind( image );
-		qglBegin (GL_QUADS);
-		qglTexCoord2f( 0, 0 );
-		qglVertex2f( x, y );
-		qglTexCoord2f( 1, 0 );
-		qglVertex2f( x + w, y );
-		qglTexCoord2f( 1, 1 );
-		qglVertex2f( x + w, y + h );
-		qglTexCoord2f( 0, 1 );
-		qglVertex2f( x, y + h );
-		qglEnd();
+		
+		qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	
+		float texcoord[] = {
+			0, 0, 1, 0, 1, 1, 0, 1
+		};
+		float vertex[] = {
+			x, y, 0.0f,
+			x+w, y, 0.0f,
+			x+w, y+h, 0.0f,
+			x, y+h, 0.0f
+		};
+	
+		vglVertexPointer(3, GL_FLOAT, 0, 4, vertex);
+		vglTexCoordPointer(2, GL_FLOAT, 0, 4, texcoord);
+		vglDrawObjects(GL_TRIANGLE_FAN, 4, GL_TRUE);
+		
 	}
 
 	qglFinish();

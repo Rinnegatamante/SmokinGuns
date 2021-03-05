@@ -24,15 +24,9 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "../qcommon/qcommon.h"
 
 // Require a minimum version of SDL
-#define MINSDL_MAJOR 1
-#define MINSDL_MINOR 2
-#define MINSDL_PATCH 10
-
-// Input subsystem
-void IN_Init( void );
-void IN_Frame( void );
-void IN_Shutdown( void );
-void IN_Restart( void );
+#define MINSDL_MAJOR 2
+#define MINSDL_MINOR 0
+#define MINSDL_PATCH 0
 
 // Console
 void CON_Shutdown( void );
@@ -44,7 +38,7 @@ unsigned int CON_LogSize( void );
 unsigned int CON_LogWrite( const char *in );
 unsigned int CON_LogRead( char *out, unsigned int outSize );
 
-#ifdef MACOS_X
+#ifdef __APPLE__
 char *Sys_StripAppBundle( char *pwd );
 #endif
 
@@ -56,21 +50,9 @@ void Sys_SigHandler( int signal ) __attribute__ ((noreturn));
 void Sys_ErrorDialog( const char *error );
 void Sys_AnsiColorPrint( const char *msg );
 
+void IN_Init( void );
+void IN_Shutdown( void );
+void IN_Restart( void );
+
 int Sys_PID( void );
 qboolean Sys_PIDIsRunning( int pid );
-
-#ifdef SMOKINGUNS
-const char *Sys_GetSystemInstallPath(const char *path);
-void Sys_PlatformPostInit( char *progname );
-void Sys_PlatformExit( void );
-#ifdef DEDICATED
-#ifndef _WIN32
-uid_t Sys_Getuid( void );
-uid_t Sys_Geteuid( void );
-int Sys_Unlink( char *file );
-pid_t Sys_Getpid( void );
-#endif
-void Sys_LockMyself(const char *qjail, const char *quser);
-void Sys_Daemonize( void );
-#endif
-#endif

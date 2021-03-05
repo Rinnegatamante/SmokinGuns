@@ -28,7 +28,7 @@ extern "C" {
 
 struct retro_core_option_definition option_defs_us[] = {
 	{
-      "vitaquakeiii_framerate",
+      "smokin_framerate",
       "Framerate (restart)",
       "Modify framerate. Requires a restart.",
       {
@@ -56,7 +56,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "auto"
    },
    {
-      "vitaquakeiii_resolution",
+      "smokin_resolution",
       "Internal resolution (restart)",
       "Configure the resolution. Requires a restart.",
       {
@@ -82,7 +82,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "960x544"
    },
     {
-      "vitaquakeiii_overbrights",
+      "smokin_overbrights",
       "Overbrights",
       "Increases the range of lighting while comprimising color precision. Requires a restart.",
       {
@@ -93,7 +93,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_wide",
+      "smokin_wide",
       "Widescreen",
       "",
       {
@@ -104,7 +104,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_invert_y_axis",
+      "smokin_invert_y_axis",
       "Invert Y Axis",
       "Invert the gamepad right analog stick's Y axis.",
       {
@@ -115,7 +115,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_fps",
+      "smokin_fps",
       "Show FPS",
       "Shows framerate on screen.",
       {
@@ -126,7 +126,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "disabled"
    },
    {
-      "vitaquakeiii_pickups",
+      "smokin_pickups",
       "2D Pickups Rendering",
       "Makes pickups (medkits, weapons, quad damage, etc.) be rendered with 2D icons.",
       {
@@ -137,7 +137,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "disabled"
    },
    {
-      "vitaquakeiii_weapon",
+      "smokin_weapon",
       "Show Equipped Weapon",
       "Shows equipped weapon on screen.",
       {
@@ -148,7 +148,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_shadows",
+      "smokin_shadows",
       "Shadows Quality",
       "Configure the quality of shadows rendering.",
       {
@@ -160,7 +160,7 @@ struct retro_core_option_definition option_defs_us[] = {
       "low"
    },
    {
-      "vitaquakeiii_filter",
+      "smokin_filter",
       "Textures Filter",
       "Configure the textures filter to use.",
       {
@@ -186,7 +186,7 @@ struct retro_core_option_definition option_defs_us[] = {
 /* RETRO_LANGUAGE_ITALIAN */
 struct retro_core_option_definition option_defs_it[] = {
 	{
-      "vitaquakeiii_framerate",
+      "smokin_framerate",
       "Framerate (riavvio)",
       "Modifica il framerate. Richiede un riavvio.",
       {
@@ -212,7 +212,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "auto"
    },
    {
-      "vitaquakeiii_resolution",
+      "smokin_resolution",
       "Risoluzione interna (riavvio)",
       "Configura la risoluzione. Richiede un riavvio.",
       {
@@ -229,7 +229,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "960x544"
    },
    {
-      "vitaquakeiii_invert_y_axis",
+      "smokin_invert_y_axis",
       "Inverti Asse Y",
       "Inverte l'asse Y dell'analogico destro.",
       {
@@ -240,7 +240,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_fps",
+      "smokin_fps",
       "Mostra FPS",
       "Mostra il framerate su schermo.",
       {
@@ -251,7 +251,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "disabled"
    },
    {
-      "vitaquakeiii_pickups",
+      "smokin_pickups",
       "Rendering 2D Pickup",
       "Rende i pickup (medkit, armi, danno quadruplo, ecc.) renderizzati con icone 2D.",
       {
@@ -262,7 +262,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "disabled"
    },
    {
-      "vitaquakeiii_weapon",
+      "smokin_weapon",
       "Mostra Arma Equipaggiata",
       "Mostra l'arma equipaggiata su schermo.",
       {
@@ -273,7 +273,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "enabled"
    },
    {
-      "vitaquakeiii_shadows",
+      "smokin_shadows",
       "Qualità Ombre",
       "Configura la qualità del rendering delle ombre.",
       {
@@ -285,7 +285,7 @@ struct retro_core_option_definition option_defs_it[] = {
       "low"
    },
    {
-      "vitaquakeiii_filter",
+      "smokin_filter",
       "Filtro Texture",
       "Configura il filtro delle texture da utilizzare.",
       {

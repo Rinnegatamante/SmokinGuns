@@ -326,14 +326,17 @@ static void RB_SurfaceBeam( void )
 
 	GL_State( GLS_SRCBLEND_ONE | GLS_DSTBLEND_ONE );
 
-	qglColor3f( 1, 0, 0 );
+	qglColor4f( 1, 0, 0, 1 );
 
-	qglBegin( GL_TRIANGLE_STRIP );
+	float *pPos = gVertexBuffer;
 	for ( i = 0; i <= NUM_BEAM_SEGS; i++ ) {
-		qglVertex3fv( start_points[ i % NUM_BEAM_SEGS] );
-		qglVertex3fv( end_points[ i % NUM_BEAM_SEGS] );
+		memcpy(gVertexBuffer, start_points[ i % NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
+		memcpy(gVertexBuffer, end_points[ i % NUM_BEAM_SEGS], sizeof(vec3_t));
+		gVertexBuffer+=3;
 	}
-	qglEnd();
+	vglVertexPointerMapped(pPos);
+	vglDrawObjects(GL_TRIANGLE_STRIP, (NUM_BEAM_SEGS + 1) * 2, GL_TRUE);
 }
 
 //================================================================================
@@ -1161,17 +1164,27 @@ static void RB_SurfaceAxis( void ) {
 	GL_Bind( tr.whiteImage );
 	GL_State( GLS_DEFAULT );
 	qglLineWidth( 3 );
-	qglBegin( GL_LINES );
-	qglColor3f( 1,0,0 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 16,0,0 );
-	qglColor3f( 0,1,0 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 0,16,0 );
-	qglColor3f( 0,0,1 );
-	qglVertex3f( 0,0,0 );
-	qglVertex3f( 0,0,16 );
-	qglEnd();
+	float clrs[] = {
+		1, 0, 0, 0,
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 1, 0
+	};
+	float verts[] = {
+		0, 0, 0,
+		16, 0, 0,
+		0, 0, 0,
+		0, 16, 0,
+		0, 0, 0,
+		0, 0, 16
+	};
+	qglEnableClientState(GL_COLOR_ARRAY);
+	vglVertexPointer(3, GL_FLOAT, 0, 6, verts);
+	vglColorPointer(4, GL_FLOAT, 0, 6, clrs);
+	vglDrawObjects(GL_LINES, 6, GL_TRUE);
+	qglDisableClientState(GL_COLOR_ARRAY);
 	qglLineWidth( 1 );
 }
 
@@ -1218,9 +1231,7 @@ static void RB_SurfaceFlare(srfFlare_t *surf)
 }
 
 static void RB_SurfaceDisplayList( srfDisplayList_t *surf ) {
-	// all apropriate state must be set in RB_BeginSurface
-	// this isn't implemented yet...
-	qglCallList( surf->listNum );
+	
 }
 
 static void RB_SurfaceSkip( void *surf ) {

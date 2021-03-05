@@ -227,8 +227,8 @@ static void InitOpenGL( void )
 		Q_strlwr( renderer_buffer );
 
 		// OpenGL driver constants
-		qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &temp );
-		glConfig.maxTextureSize = temp;
+		//->qglGetIntegerv( GL_MAX_TEXTURE_SIZE, &temp );
+		glConfig.maxTextureSize = 4096;
 
 		// stubbed or broken drivers may have reported 0...
 		if ( glConfig.maxTextureSize <= 0 )
@@ -247,41 +247,7 @@ GL_CheckErrors
 ==================
 */
 void GL_CheckErrors( void ) {
-	int		err;
-	char	s[64];
-
-	err = qglGetError();
-	if ( err == GL_NO_ERROR ) {
-		return;
-	}
-	if ( r_ignoreGLErrors->integer ) {
-		return;
-	}
-	switch( err ) {
-		case GL_INVALID_ENUM:
-			strcpy( s, "GL_INVALID_ENUM" );
-			break;
-		case GL_INVALID_VALUE:
-			strcpy( s, "GL_INVALID_VALUE" );
-			break;
-		case GL_INVALID_OPERATION:
-			strcpy( s, "GL_INVALID_OPERATION" );
-			break;
-		case GL_STACK_OVERFLOW:
-			strcpy( s, "GL_STACK_OVERFLOW" );
-			break;
-		case GL_STACK_UNDERFLOW:
-			strcpy( s, "GL_STACK_UNDERFLOW" );
-			break;
-		case GL_OUT_OF_MEMORY:
-			strcpy( s, "GL_OUT_OF_MEMORY" );
-			break;
-		default:
-			Com_sprintf( s, sizeof(s), "%i", err);
-			break;
-	}
-
-	ri.Error( ERR_FATAL, "GL_CheckErrors: %s", s );
+	
 }
 
 
@@ -406,25 +372,7 @@ Return value must be freed with ri.Hunk_FreeTempMemory()
 
 byte *RB_ReadPixels(int x, int y, int width, int height, size_t *offset, int *padlen)
 {
-	byte *buffer, *bufstart;
-	int padwidth, linelen;
-	GLint packAlign;
-	
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-	
-	linelen = width * 3;
-	padwidth = PAD(linelen, packAlign);
-	
-	// Allocate a few more bytes so that we can choose an alignment we like
-	buffer = ri.Hunk_AllocateTempMemory(padwidth * height + *offset + packAlign - 1);
-	
-	bufstart = PADP((intptr_t) buffer + *offset, packAlign);
-	qglReadPixels(x, y, width, height, GL_RGB, GL_UNSIGNED_BYTE, bufstart);
-	
-	*offset = bufstart - buffer;
-	*padlen = padwidth - linelen;
-	
-	return buffer;
+	return NULL;
 }
 
 /* 
@@ -434,58 +382,6 @@ RB_TakeScreenshot
 */  
 void RB_TakeScreenshot(int x, int y, int width, int height, char *fileName)
 {
-	byte *allbuf, *buffer;
-	byte *srcptr, *destptr;
-	byte *endline, *endmem;
-	byte temp;
-	
-	int linelen, padlen;
-	size_t offset = 18, memcount;
-		
-	allbuf = RB_ReadPixels(x, y, width, height, &offset, &padlen);
-	buffer = allbuf + offset - 18;
-	
-	Com_Memset (buffer, 0, 18);
-	buffer[2] = 2;		// uncompressed type
-	buffer[12] = width & 255;
-	buffer[13] = width >> 8;
-	buffer[14] = height & 255;
-	buffer[15] = height >> 8;
-	buffer[16] = 24;	// pixel size
-
-	// swap rgb to bgr and remove padding from line endings
-	linelen = width * 3;
-	
-	srcptr = destptr = allbuf + offset;
-	endmem = srcptr + (linelen + padlen) * height;
-	
-	while(srcptr < endmem)
-	{
-		endline = srcptr + linelen;
-
-		while(srcptr < endline)
-		{
-			temp = srcptr[0];
-			*destptr++ = srcptr[2];
-			*destptr++ = srcptr[1];
-			*destptr++ = temp;
-			
-			srcptr += 3;
-		}
-		
-		// Skip the pad
-		srcptr += padlen;
-	}
-
-	memcount = linelen * height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(allbuf + offset, memcount);
-
-	ri.FS_WriteFile(fileName, buffer, memcount + 18);
-
-	ri.Hunk_FreeTempMemory(allbuf);
 }
 
 /* 
@@ -797,74 +693,7 @@ RB_TakeVideoFrameCmd
 */
 const void *RB_TakeVideoFrameCmd( const void *data )
 {
-	const videoFrameCommand_t	*cmd;
-	byte				*cBuf;
-	size_t				memcount, linelen;
-	int				padwidth, avipadwidth, padlen, avipadlen;
-	GLint packAlign;
-	
-	cmd = (const videoFrameCommand_t *)data;
-	
-	qglGetIntegerv(GL_PACK_ALIGNMENT, &packAlign);
-
-	linelen = cmd->width * 3;
-
-	// Alignment stuff for glReadPixels
-	padwidth = PAD(linelen, packAlign);
-	padlen = padwidth - linelen;
-	// AVI line padding
-	avipadwidth = PAD(linelen, AVI_LINE_PADDING);
-	avipadlen = avipadwidth - linelen;
-
-	cBuf = PADP(cmd->captureBuffer, packAlign);
-		
-	qglReadPixels(0, 0, cmd->width, cmd->height, GL_RGB,
-		GL_UNSIGNED_BYTE, cBuf);
-
-	memcount = padwidth * cmd->height;
-
-	// gamma correct
-	if(glConfig.deviceSupportsGamma)
-		R_GammaCorrect(cBuf, memcount);
-
-	if(cmd->motionJpeg)
-	{
-		memcount = RE_SaveJPGToBuffer(cmd->encodeBuffer, linelen * cmd->height,
-			r_aviMotionJpegQuality->integer,
-			cmd->width, cmd->height, cBuf, padlen);
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, memcount);
-	}
-	else
-	{
-		byte *lineend, *memend;
-		byte *srcptr, *destptr;
-	
-		srcptr = cBuf;
-		destptr = cmd->encodeBuffer;
-		memend = srcptr + memcount;
-		
-		// swap R and B and remove line paddings
-		while(srcptr < memend)
-		{
-			lineend = srcptr + linelen;
-			while(srcptr < lineend)
-			{
-				*destptr++ = srcptr[2];
-				*destptr++ = srcptr[1];
-				*destptr++ = srcptr[0];
-				srcptr += 3;
-			}
-			
-			Com_Memset(destptr, '\0', avipadlen);
-			destptr += avipadlen;
-			
-			srcptr += padlen;
-		}
-		
-		ri.CL_WriteAVIVideoFrame(cmd->encodeBuffer, avipadwidth * cmd->height);
-	}
-
-	return (const void *)(cmd + 1);	
+	return NULL;
 }
 
 //============================================================================
@@ -880,26 +709,16 @@ void GL_SetDefaultState( void )
 
 	qglColor4f (1,1,1,1);
 
-	// initialize downstream texture unit if we're running
-	// in a multitexture environment
-	if ( qglActiveTextureARB ) {
-		GL_SelectTexture( 1 );
-		GL_TextureMode( r_textureMode->string );
-		GL_TexEnv( GL_MODULATE );
-		qglDisable( GL_TEXTURE_2D );
-		GL_SelectTexture( 0 );
-	}
-
 	qglEnable(GL_TEXTURE_2D);
 	GL_TextureMode( r_textureMode->string );
 	GL_TexEnv( GL_MODULATE );
 
-	qglShadeModel( GL_SMOOTH );
 	qglDepthFunc( GL_LEQUAL );
 
 	// the vertex array is always enabled, but the color and texture
 	// arrays are enabled and disabled around the compiled vertex array call
 	qglEnableClientState (GL_VERTEX_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 
 	//
 	// make sure our GL state vector is set correctly
@@ -989,28 +808,20 @@ void GfxInfo_f( void )
 		ri.Printf( PRINT_ALL, "rendering primitives: " );
 		primitives = r_primitives->integer;
 		if ( primitives == 0 ) {
-			if ( qglLockArraysEXT ) {
-				primitives = 2;
-			} else {
+			//->if ( qglLockArraysEXT ) {
+			//->	primitives = 2;
+			//->} else {
 				primitives = 1;
-			}
+			//->}
 		}
-		if ( primitives == -1 ) {
-			ri.Printf( PRINT_ALL, "none\n" );
-		} else if ( primitives == 2 ) {
-			ri.Printf( PRINT_ALL, "single glDrawElements\n" );
-		} else if ( primitives == 1 ) {
-			ri.Printf( PRINT_ALL, "multiple glArrayElement\n" );
-		} else if ( primitives == 3 ) {
-			ri.Printf( PRINT_ALL, "multiple glColor4ubv + glTexCoord2fv + glVertex3fv\n" );
-		}
+		ri.Printf( PRINT_ALL, "vglDrawObjects\n");
 	}
 
 	ri.Printf( PRINT_ALL, "texturemode: %s\n", r_textureMode->string );
 	ri.Printf( PRINT_ALL, "picmip: %d\n", r_picmip->integer );
 	ri.Printf( PRINT_ALL, "texture bits: %d\n", r_texturebits->integer );
-	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[qglActiveTextureARB != 0] );
-	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[qglLockArraysEXT != 0 ] );
+	ri.Printf( PRINT_ALL, "multitexture: %s\n", enablestrings[/*qglActiveTextureARB !=*/ 0] );
+	ri.Printf( PRINT_ALL, "compiled vertex arrays: %s\n", enablestrings[/*qglLockArraysEXT !=*/ 0 ] );
 	ri.Printf( PRINT_ALL, "texenv add: %s\n", enablestrings[glConfig.textureEnvAddAvailable != 0] );
 	ri.Printf( PRINT_ALL, "compressed textures: %s\n", enablestrings[glConfig.textureCompression!=TC_NONE] );
 	if ( r_vertexLight->integer || glConfig.hardwareType == GLHW_PERMEDIA2 )
@@ -1292,11 +1103,6 @@ void R_Init( void ) {
 	R_ModelInit();
 
 	R_InitFreeType();
-
-
-	err = qglGetError();
-	if ( err != GL_NO_ERROR )
-		ri.Printf (PRINT_ALL, "glGetError() = 0x%x\n", err);
 
 	// print info
 	GfxInfo_f();

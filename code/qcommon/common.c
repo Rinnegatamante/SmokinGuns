@@ -192,7 +192,7 @@ void QDECL Com_Printf( const char *fmt, ... ) {
 		//*rd_buffer = 0;
 		return;
 	}
-
+	
 #ifndef SMOKINGUNS
 #ifndef DEDICATED
 	CL_ConsolePrint( msg );
@@ -2602,45 +2602,8 @@ Find out whether we have SSE support for Q_ftol function
 =================
 */
 
-#if id386 || idx64
-
-static void Com_DetectSSE(void)
-{
-#if !idx64
-	cpuFeatures_t feat;
-	
-	feat = Sys_GetProcessorFeatures();
-
-	if(feat & CF_SSE)
-	{
-		if(feat & CF_SSE2)
-			Q_SnapVector = qsnapvectorsse;
-		else
-			Q_SnapVector = qsnapvectorx87;
-
-		Q_ftol = qftolsse;
-#endif
-		Q_VMftol = qvmftolsse;
-
-		Com_Printf("Have SSE support\n");
-#if !idx64
-	}
-	else
-	{
-		Q_ftol = qftolx87;
-		Q_VMftol = qvmftolx87;
-		Q_SnapVector = qsnapvectorx87;
-
-		Com_Printf("No SSE support on this machine\n");
-	}
-#endif
-}
-
-#else
-
 #define Com_DetectSSE()
 
-#endif
 
 /*
 =================

@@ -366,22 +366,31 @@ static void DrawSkySide( struct image_s *image, const int mins[2], const int max
 	int s, t;
 
 	GL_Bind( image );
-
+	qglDisableClientState(GL_COLOR_ARRAY);
+	qglEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	for ( t = mins[1]+HALF_SKY_SUBDIVISIONS; t < maxs[1]+HALF_SKY_SUBDIVISIONS; t++ )
 	{
-		qglBegin( GL_TRIANGLE_STRIP );
-
+		float *texcoord = gTexCoordBuffer;
+		float *vertices = gVertexBuffer;
+		int numindices = 0;
 		for ( s = mins[0]+HALF_SKY_SUBDIVISIONS; s <= maxs[0]+HALF_SKY_SUBDIVISIONS; s++ )
 		{
-			qglTexCoord2fv( s_skyTexCoords[t][s] );
-			qglVertex3fv( s_skyPoints[t][s] );
-
-			qglTexCoord2fv( s_skyTexCoords[t+1][s] );
-			qglVertex3fv( s_skyPoints[t+1][s] );
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			memcpy(gTexCoordBuffer, s_skyTexCoords[t+1][s], sizeof(vec2_t));
+			memcpy(gVertexBuffer, s_skyPoints[t+1][s], sizeof(vec3_t));
+			gVertexBuffer += 3;
+			gTexCoordBuffer += 2;
+			numindices += 2;
 		}
-
-		qglEnd();
+		vglVertexPointerMapped(vertices);
+		vglTexCoordPointerMapped(texcoord);
+		vglDrawObjects(GL_TRIANGLE_STRIP, numindices, GL_TRUE);
 	}
+	//glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	qglEnableClientState(GL_COLOR_ARRAY);
 }
 
 static void DrawSkyBox( shader_t *shader )
@@ -765,7 +774,7 @@ void RB_StageIteratorSky( void ) {
 
 	// draw the outer skybox
 	if ( tess.shader->sky.outerbox[0] && tess.shader->sky.outerbox[0] != tr.defaultImage ) {
-		qglColor3f( tr.identityLight, tr.identityLight, tr.identityLight );
+		qglColor4f( tr.identityLight, tr.identityLight, tr.identityLight, 1 );
 		
 		qglPushMatrix ();
 		GL_State( 0 );
