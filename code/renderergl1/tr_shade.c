@@ -43,7 +43,7 @@ without compiled vertex arrays.
 ==================
 */
 static void R_DrawElements( int numIndexes, const glIndex_t *indexes ) {
-	glDrawElements(GL_TRIANGLES, numIndexes, GL_UNSIGNED_SHORT, indexes);
+	qglDrawElements(GL_TRIANGLES, numIndexes, GL_UNSIGNED_SHORT, indexes);
 }
 
 
