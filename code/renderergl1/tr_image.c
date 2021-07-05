@@ -748,8 +748,15 @@ image_t *R_CreateImage( const char *name, byte *pic, int width, int height,
 	else
 		glWrapClampMode = GL_REPEAT;
 
+	// lightmaps are always allocated on TMU 1
+	if ( isLightmap ) {
+		image->TMU = 1;
+	} else {
 		image->TMU = 0;
+	}
 
+	GL_SelectTexture( image->TMU );
+	
 	GL_Bind(image);
 
 	Upload32( (unsigned *)pic, image->width, image->height, 
@@ -1244,7 +1251,10 @@ void R_DeleteTextures( void ) {
 	tr.numImages = 0;
 
 	Com_Memset( glState.currenttextures, 0, sizeof( glState.currenttextures ) );
-		qglBindTexture( GL_TEXTURE_2D, 0 );
+	GL_SelectTexture( 1 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
+	GL_SelectTexture( 0 );
+	qglBindTexture( GL_TEXTURE_2D, 0 );
 }
 
 /*

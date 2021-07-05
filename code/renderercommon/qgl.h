@@ -126,6 +126,8 @@ extern uint16_t *indices;
 
 extern void vglVertexAttribPointerMapped(int id, void* ptr);
 
+extern  void ( APIENTRY * qglActiveTexture )(GLenum texture);
+extern  void ( APIENTRY * qglClientActiveTexture )(GLenum texture);
 extern  void ( APIENTRY * qglBlendFunc )(GLenum sfactor, GLenum dfactor);
 extern  void ( APIENTRY * qglTexImage2D )(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 extern  void ( APIENTRY * qglTexParameteri )(GLenum target, GLenum pname, GLint param);

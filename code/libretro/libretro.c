@@ -30,6 +30,8 @@ static bool widescreen_enabled      = false;
 
 int scr_width = 960, scr_height = 544;
 
+void ( APIENTRY * qglActiveTexture )(GLenum texture);
+void ( APIENTRY * qglClientActiveTexture )(GLenum texture);
 void ( APIENTRY * qglBlendFunc )(GLenum sfactor, GLenum dfactor);
 void ( APIENTRY * qglTexImage2D )(GLenum target, GLint level, GLint internalformat, GLsizei width, GLsizei height, GLint border, GLenum format, GLenum type, const GLvoid *pixels);
 void ( APIENTRY * qglTexParameteri )(GLenum target, GLenum pname, GLint param);
@@ -85,13 +87,12 @@ void ( APIENTRY * qglColorMask )(GLboolean red, GLboolean green, GLboolean blue,
 void ( APIENTRY * qglLineWidth )(GLfloat width);
 void ( APIENTRY * qglStencilMask )(GLuint mask);
 
-#define GL_FUNCS_NUM 52
+#define GL_FUNCS_NUM 54
 
 #define MAX_INDICES 4096
 uint16_t* indices;
 float *gVertexBuffer;
 uint8_t *gColorBuffer;
-uint8_t *gColorBuffer255;
 float *gTexCoordBuffer;
 float *gVertexBufferPtr;
 uint8_t *gColorBufferPtr;
@@ -331,6 +332,8 @@ static bool initialize_gl()
 	funcs[49].ptr = qglColorMask          = hw_render.get_proc_address ("glColorMask");
 	funcs[50].ptr = qglLineWidth          = hw_render.get_proc_address ("glLineWidth");
 	funcs[51].ptr = qglStencilMask        = hw_render.get_proc_address ("glStencilMask");
+	funcs[52].ptr = qglActiveTexture      = hw_render.get_proc_address ("glActiveTexture");
+	funcs[53].ptr = qglClientActiveTexture= hw_render.get_proc_address ("glClientActiveTexture");
 	
 	if (log_cb) {
 		int i;
@@ -1991,7 +1994,7 @@ void GLimp_Init()
 	glConfig.hardwareType = GLHW_GENERIC;
 	glConfig.deviceSupportsGamma = qfalse;
 	glConfig.textureCompression = TC_NONE;
-	glConfig.textureEnvAddAvailable = qfalse;
+	glConfig.textureEnvAddAvailable = qtrue;
 	glConfig.windowAspect = ((float)scr_width) / ((float)scr_height);
 	glConfig.isFullscreen = qtrue;
 	
@@ -2006,11 +2009,9 @@ void GLimp_Init()
 		indices[i] = i;
 	}
 	qglEnableClientState(GL_VERTEX_ARRAY);
-	gVertexBufferPtr = (float*)malloc(0x400000);
-	gColorBufferPtr = (uint8_t*)malloc(0x200000);
-	gTexCoordBufferPtr = (float*)malloc(0x200000);
-	gColorBuffer255 = (uint8_t*)malloc(0x3000);
-	memset(gColorBuffer255, 0xFF, 0x3000);
+	gVertexBufferPtr = (float*)malloc(0x100000);
+	gColorBufferPtr = (uint8_t*)malloc(0x100000);
+	gTexCoordBufferPtr = (float*)malloc(0x100000);
 	gVertexBuffer = gVertexBufferPtr;
 	gColorBuffer = gColorBufferPtr;
 	gTexCoordBuffer = gTexCoordBufferPtr;

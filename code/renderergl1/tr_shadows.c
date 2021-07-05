@@ -98,9 +98,9 @@ void R_RenderShadowEdges( void ) {
 			if ( hit[ 1 ] == 0 ) {
 				float vertices[] = {
 					tess.xyz[i][0], tess.xyz[i][1], tess.xyz[i][2],
-					shadowXyz[i][0], shadowXyz[i][1], shadowXyz[i][2],
+					tess.xyz[i + tess.numVertexes][0], tess.xyz[i + tess.numVertexes][1], tess.xyz[i + tess.numVertexes][2],
 					tess.xyz[i2][0], tess.xyz[i2][1], tess.xyz[i2][2],
-					shadowXyz[i2][0], shadowXyz[i2][1], shadowXyz[i2][2]
+					tess.xyz[i2 + tess.numVertexes][0], tess.xyz[i2 + tess.numVertexes][1], tess.xyz[i2 + tess.numVertexes][2]
 				};
 				vglVertexPointer( 3, GL_FLOAT, 0, 4, vertices );
 				vglDrawObjects(GL_TRIANGLE_STRIP, 4, GL_TRUE);

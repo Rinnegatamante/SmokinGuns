@@ -708,6 +708,14 @@ void GL_SetDefaultState( void )
 	qglCullFace(GL_FRONT);
 
 	qglColor4f (1,1,1,1);
+	
+	// initialize downstream texture unit if we're running
+	// in a multitexture environment
+	GL_SelectTexture( 1 );
+	GL_TextureMode( r_textureMode->string );
+	GL_TexEnv( GL_MODULATE );
+	qglDisable( GL_TEXTURE_2D );
+	GL_SelectTexture( 0 );
 
 	qglEnable(GL_TEXTURE_2D);
 	GL_TextureMode( r_textureMode->string );

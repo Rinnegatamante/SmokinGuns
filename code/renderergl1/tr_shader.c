@@ -1816,8 +1816,6 @@ static qboolean CollapseMultitexture( void ) {
 	int i;
 	textureBundle_t tmpBundle;
 
-		return qfalse;
-
 	// make sure both stages are active
 	if ( !stages[0].active || !stages[1].active ) {
 		return qfalse;
